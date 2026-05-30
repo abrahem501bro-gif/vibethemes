@@ -124,11 +124,13 @@
             font-weight: 700;
             font-size: 14px;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .btn-download {
             background-color: var(--accent);
             color: #000;
+            border: none;
         }
 
         .btn-download:hover {
@@ -199,12 +201,31 @@
 
         let savedThemes = JSON.parse(localStorage.getItem('vibe_themes')) || [];
         
+        function forceDownload(url, filename) {
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    const blobURL = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = blobURL;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(blobURL);
+                })
+                .catch(() => {
+                    // إذا حظر المتصفح التحميل المباشر يفتح الرابط بتبويب جديد كخيار احتياطي
+                    window.open(url, '_blank');
+                });
+        }
+        
         function renderThemes() {
             if (savedThemes.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">لا يوجد ثيمات مضافة حالياً. أرسل أمراً للبوت ليتم التحديث فوراً!</p>';
                 return;
             }
-            container.innerHTML = savedThemes.map(theme => `
+            container.innerHTML = savedThemes.map((theme, index) => `
                 <div class="theme-card">
                     <div class="theme-img-wrapper">
                         <img src="${theme.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}" class="theme-img" alt="معاينة">
@@ -213,7 +234,7 @@
                         <h3>${theme.title}</h3>
                         <p>${theme.desc}</p>
                         <div class="btn-group">
-                            <a href="${theme.file}" download target="_blank" class="btn btn-download">تحميل الثيم</a>
+                            <button onclick="forceDownload('${theme.file}', '${theme.title}.attheme')" class="btn btn-download">تحميل الثيم</button>
                             <a href="${theme.image}" target="_blank" class="btn btn-preview">معاينة حية</a>
                         </div>
                     </div>
@@ -259,13 +280,11 @@
                                     file: parts[3].trim()
                                 };
                                 
-                                // منع التكرار
                                 if (!savedThemes.some(t => t.file === newTheme.file)) {
                                     savedThemes.unshift(newTheme);
                                     hasNewThemes = true;
                                 }
                                 
-                                // إرسال رسالة تأكيد للمستخدم عبر البوت
                                 await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
@@ -286,7 +305,6 @@
             } catch (e) { console.log("Error fetching updates:", e); }
         }
 
-        // فحص مستمر فوري وسريع جداً بدون تجميد المتصفح
         setInterval(checkBotUpdates, 2000);
     </script>
 
