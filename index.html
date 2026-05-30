@@ -197,26 +197,13 @@
 
     <script>
         const TELEGRAM_TOKEN = '8397760075:AAGWDrHjTN7Y0lZvEenbetj6CKq7Ve4KdNI';
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
         const container = document.getElementById('themes-container');
 
         let savedThemes = JSON.parse(localStorage.getItem('vibe_themes')) || [];
         
         function forceDownload(url, filename) {
-            fetch(url)
-                .then(response => response.blob())
-                .then(blob => {
-                    const blobURL = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = blobURL;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(blobURL);
-                })
-                .catch(() => {
-                    window.open(url, '_blank');
-                });
+            window.open(url, '_blank');
         }
         
         function renderThemes() {
@@ -247,10 +234,10 @@
 
         async function getTelegramFileUrl(fileId) {
             try {
-                const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${fileId}`);
+                const res = await fetch(`${proxyUrl}${encodeURIComponent(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${fileId}`)}`);
                 const data = await res.json();
-                if (data.ok) {
-                    return `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${data.result.file_path}`;
+                if (data && data.file_path) {
+                    return `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${data.file_path}`;
                 }
             } catch(e) { console.log(e); }
             return "";
@@ -258,10 +245,10 @@
 
         async function checkBotUpdates() {
             try {
-                const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=3`);
+                const res = await fetch(`${proxyUrl}${encodeURIComponent(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=2`)}`);
                 const data = await res.json();
                 
-                if(data.ok && data.result.length > 0) {
+                if(data && data.ok && data.result.length > 0) {
                     let hasNewThemes = false;
 
                     for(let update of data.result) {
@@ -276,16 +263,14 @@
                         let title = "ثيم تيليجرام مميز";
                         let desc = "ثيم احترافي مضاف مباشرة عبر ملف التيليجرام.";
 
-                        // 1. إذا قام المستخدم برفع ملف مباشر (.attheme)
                         if (update.message.document) {
                             const doc = update.message.document;
-                            if (doc.file_name.endsWith('.attheme') || doc.mime_type === 'application/x-tgtheme') {
+                            if (doc.file_name.endsWith('.attheme') || doc.mime_type === 'application/x-tgtheme' || doc.file_name.includes('attheme')) {
                                 title = doc.file_name.replace('.attheme', '');
                                 fileUrl = await getTelegramFileUrl(doc.file_id);
                             }
                         }
 
-                        // 2. إذا كان الأمر نصياً عادياً عن طريق الـ /add
                         if(text.trim().startsWith('/add')) {
                             const parts = text.replace('/add', '').trim().split('|');
                             if(parts.length >= 4) {
@@ -304,12 +289,11 @@
                             }
                         }
 
-                        // إذا وجدنا ملفاً مباشراً مرفوعاً
                         if (fileUrl) {
                             const newTheme = {
                                 title: title,
                                 desc: desc,
-                                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80', // صورة افتراضية فخمة
+                                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80',
                                 file: fileUrl
                             };
                             
@@ -335,12 +319,12 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     chat_id: chatId,
-                    text: `✅ كفو يا إبراهيم، تم إضافة ثيم (${themeTitle}) بنجاح للموقع وبدأ التحميل المباشر!`
+                    text: `✅ كفو يا إبراهيم، تم إضافة ثيم (${themeTitle}) بنجاح للموقع الحين!`
                 })
             });
         }
 
-        setInterval(checkBotUpdates, 2000);
+        setInterval(checkBotUpdates, 3000);
     </script>
 
 </body>
