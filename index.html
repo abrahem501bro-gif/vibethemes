@@ -1,11 +1,10 @@
-<!DOCTYPE html>
+ html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VibeThemes | إبراهيم الشنوان</title>
     <style>
-        /* تصميم فخم وأدب - الألوان المظلمة العميقة */
         :root {
             --bg-deep: #08090a;
             --bg-card: #11141a;
@@ -23,7 +22,6 @@
             padding: 0;
         }
 
-        /* الهيدر الاحترافي */
         header {
             background: radial-gradient(circle at top, #161b26 0%, var(--bg-deep) 70%);
             padding: 60px 20px;
@@ -36,7 +34,6 @@
             margin: 0;
             font-weight: 800;
             color: #fff;
-            letter-spacing: 1px;
         }
 
         header h1 span {
@@ -48,9 +45,6 @@
             color: var(--text-muted);
             font-size: 18px;
             margin-top: 15px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .container {
@@ -67,14 +61,12 @@
             margin: 40px 0 25px 0;
         }
 
-        /* شبكة الكروت الاحترافية */
         .themes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
         }
 
-        /* كرت الثيم بطابع مودرن */
         .theme-card {
             background-color: var(--bg-card);
             border-radius: 16px;
@@ -90,11 +82,9 @@
         }
 
         .theme-img-wrapper {
-            position: relative;
             width: 100%;
             height: 190px;
             background: #161b26;
-            overflow: hidden;
         }
 
         .theme-img {
@@ -120,7 +110,6 @@
             line-height: 1.6;
         }
 
-        /* الأزرار الفخمة */
         .btn-group {
             display: flex;
             gap: 12px;
@@ -157,7 +146,7 @@
             background-color: #161b26;
             border-color: #fff;
         }
-        /* فوتر يليق بالمطور إبراهيم الشنوان */
+
         footer {
             background-color: #040506;
             padding: 50px 20px;
@@ -171,7 +160,6 @@
             color: var(--text-muted);
             margin: 0;
         }
-
         footer .branding strong {
             color: var(--accent);
             font-weight: 700;
@@ -193,46 +181,80 @@
     </header>
 
     <div class="container">
+        <h2 class="section-title">ثيمات مضافة حديثاً عبر البوت</h2>
         
-        <h2 class="section-title">ثيمات مميزة جاهزة للتحميل</h2>
-        
-        <div class="themes-grid">
-            
-            <div class="theme-card">
-                <div class="theme-img-wrapper">
-                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80" class="theme-img" alt="معاينة">
-                </div>
-                <div class="theme-info">
-                    <h3>ثيم تيليجرام نيون مائي حقيقي</h3>
-                    <p>ثيم واجهة مظلمة مع لمسات باللون النيون المريح للعين ليلاً لتجربة دردشة مميزة.</p>
-                    <div class="btn-group">
-                        <a href="https://raw.githubusercontent.com/FmThemed/Telegram-Themes/master/Water_Neon.attheme" download class="btn btn-download">تحميل الثيم</a>
-                        <a href="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1000&q=80" target="_blank" class="btn btn-preview">معاينة حية</a>
-                    </div>
-                </div>
+        <div class="themes-grid" id="themes-container">
             </div>
-
-            <div class="theme-card">
-                <div class="theme-img-wrapper">
-                    <img src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600&q=80" class="theme-img" alt="معاينة">
-                </div>
-                <div class="theme-info">
-                    <h3>قالب سيو بلس الاحترافي</h3>
-                    <p>أسرع قالب متوافق تماماً مع محركات البحث، مجهز ومعدل بشكل كامل للتحميل.</p>
-                    <div class="btn-group">
-                        <a href="https://raw.githubusercontent.com/scandie/seo-plus-free/main/seoplus-free.xml" download class="btn btn-download">تحميل القالب</a>
-                        <a href="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1000&q=80" target="_blank" class="btn btn-preview">معاينة حية</a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
     </div>
 
     <footer>
         <p class="branding">بُني الموقع وتطويره بواسطة: <strong>إبراهيم الشنوان</strong></p>
         <p class="copyright">&copy; 2026 VibeThemes. جميع الحقوق محفوظة.</p>
     </footer>
+
+    <script>
+        const TELEGRAM_TOKEN = '8917317957:AAGEupulN_K0MZHRtznNxYixptc21Z5bkaM';
+        const container = document.getElementById('themes-container');
+
+        // جلب الثيمات المخزنة محلياً في المتصفح لتعمل فوراً كعرض مؤقت سريع
+        let savedThemes = JSON.parse(localStorage.getItem('vibe_themes')) || [];
+        
+        function renderThemes() {
+            container.innerHTML = savedThemes.map(theme => 
+                <div class="theme-card">
+                    <div class="theme-img-wrapper">
+                        <img expr:src="${theme.image} ?: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}" class="theme-img" alt="معاينة"/>
+                    </div>
+                    <div class="theme-info">
+                        <h3>${theme.title}</h3>
+                        <p>${theme.desc}</p>
+                        <div class="btn-group">
+                            <a href="${theme.file}" download target="_blank" class="btn btn-download">تحميل الثيم</a>
+                            <a href="${theme.image}" target="_blank" class="btn btn-preview">معاينة حية</a>
+                        </div>
+                    </div>
+                </div>
+            ).join('');
+        }
+
+        renderThemes();
+
+        // فحص الرسائل الجديدة القادمة للبوت كل 5 ثوانٍ وتحديث الموقع تلقائياً
+        let lastUpdateId = 0;
+        async function checkBotUpdates() {
+            try {
+                const res = await fetch('https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates?offset=${lastUpdateId + 1}');
+                const data = await res.json();
+                if(data.ok && data.result.length > 0) {
+                    for(let update of data.result) {
+                        lastUpdateId = update.updateId;
+                        if(update.message && update.message.text) {
+                            const text = update.message.text;
+                            // فحص إذا أرسلت أمر إضافة ثيم بالصيغة الصحيحة
+                            if(text.startsWith('/add')) {
+                                const parts = text.replace('/add', '').trim().split('|');
+                                if(parts.length >= 4) {
+                                    const newTheme = {
+                                        title: parts[0].trim(),
+                                        desc: parts[1].trim(),
+                                        image: parts[2].trim(),
+                                        file: parts[3].trim()
+                                    };
+                                    savedThemes.unshift(newTheme);
+                                    localStorage.setItem('vibe_themes', JSON.stringify(savedThemes));
+                                    renderThemes();
+                                    
+                                    // إرسال رسالة تأكيد لجوالك عبر البوت
+                                    fetch('https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${update.message.chat.id}&text=✅ كفو يا إبراهيم، تم إضافة الثيم بنجاح للموقع!');
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) { console.log(e); }
+        }
+        setInterval(checkBotUpdates, 5000);
+    </script>
 
 </body>
 </html>
