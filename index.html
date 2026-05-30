@@ -1,4 +1,4 @@
- html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -160,6 +160,7 @@
             color: var(--text-muted);
             margin: 0;
         }
+
         footer .branding strong {
             color: var(--accent);
             font-weight: 700;
@@ -196,14 +197,17 @@
         const TELEGRAM_TOKEN = '8917317957:AAGEupulN_K0MZHRtznNxYixptc21Z5bkaM';
         const container = document.getElementById('themes-container');
 
-        // جلب الثيمات المخزنة محلياً في المتصفح لتعمل فوراً كعرض مؤقت سريع
         let savedThemes = JSON.parse(localStorage.getItem('vibe_themes')) || [];
         
         function renderThemes() {
-            container.innerHTML = savedThemes.map(theme => 
+            if (savedThemes.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">لا يوجد ثيمات مضافة حالياً. أرسل أمراً للبوت ليتم التحديث فوراً!</p>';
+                return;
+            }
+            container.innerHTML = savedThemes.map(theme => `
                 <div class="theme-card">
                     <div class="theme-img-wrapper">
-                        <img expr:src="${theme.image} ?: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}" class="theme-img" alt="معاينة"/>
+                        <img src="${theme.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}" class="theme-img" alt="معاينة">
                     </div>
                     <div class="theme-info">
                         <h3>${theme.title}</h3>
@@ -214,46 +218,76 @@
                         </div>
                     </div>
                 </div>
-            ).join('');
+            `).join('');
         }
 
         renderThemes();
 
-        // فحص الرسائل الجديدة القادمة للبوت كل 5 ثوانٍ وتحديث الموقع تلقائياً
-        let lastUpdateId = 0;
+        let lastUpdateId = parseInt(localStorage.getItem('last_update_id')) || 0;
+
         async function checkBotUpdates() {
             try {
-                const res = await fetch('https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates?offset=${lastUpdateId + 1}');
+                const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=3`);
                 const data = await res.json();
+                
                 if(data.ok && data.result.length > 0) {
+                    let hasNewThemes = false;
+
                     for(let update of data.result) {
-                        lastUpdateId = update.updateId;
-                        if(update.message && update.message.text) {
-                            const text = update.message.text;
-                            // فحص إذا أرسلت أمر إضافة ثيم بالصيغة الصحيحة
-                            if(text.startsWith('/add')) {
-                                const parts = text.replace('/add', '').trim().split('|');
-                                if(parts.length >= 4) {
-                                    const newTheme = {
-                                        title: parts[0].trim(),
-                                        desc: parts[1].trim(),
-                                        image: parts[2].trim(),
-                                        file: parts[3].trim()
-                                    };
+                        lastUpdateId = update.update_id;
+                        localStorage.setItem('last_update_id', lastUpdateId);
+
+                        let text = "";
+                        let chatId = "";
+
+                        if (update.message) {
+                            chatId = update.message.chat.id;
+                            if (update.message.text) {
+                                text = update.message.text;
+                            } else if (update.message.caption) {
+                                text = update.message.caption;
+                            }
+                        }
+
+                        if(text.trim().startsWith('/add')) {
+                            const parts = text.replace('/add', '').trim().split('|');
+                            if(parts.length >= 4) {
+                                const newTheme = {
+                                    title: parts[0].trim(),
+                                    desc: parts[1].trim(),
+                                    image: parts[2].trim(),
+                                    file: parts[3].trim()
+                                };
+                                
+                                // منع التكرار
+                                if (!savedThemes.some(t => t.file === newTheme.file)) {
                                     savedThemes.unshift(newTheme);
-                                    localStorage.setItem('vibe_themes', JSON.stringify(savedThemes));
-                                    renderThemes();
-                                    
-                                    // إرسال رسالة تأكيد لجوالك عبر البوت
-                                    fetch('https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${update.message.chat.id}&text=✅ كفو يا إبراهيم، تم إضافة الثيم بنجاح للموقع!');
+                                    hasNewThemes = true;
                                 }
+                                
+                                // إرسال رسالة تأكيد للمستخدم عبر البوت
+                                await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        chat_id: chatId,
+                                        text: `✅ كفو يا إبراهيم، تم إضافة ثيم (${newTheme.title}) بنجاح للموقع الحين!`
+                                    })
+                                });
                             }
                         }
                     }
+
+                    if (hasNewThemes) {
+                        localStorage.setItem('vibe_themes', JSON.stringify(savedThemes));
+                        renderThemes();
+                    }
                 }
-            } catch (e) { console.log(e); }
+            } catch (e) { console.log("Error fetching updates:", e); }
         }
-        setInterval(checkBotUpdates, 5000);
+
+        // فحص مستمر فوري وسريع جداً بدون تجميد المتصفح
+        setInterval(checkBotUpdates, 2000);
     </script>
 
 </body>
