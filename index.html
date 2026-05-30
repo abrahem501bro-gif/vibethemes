@@ -215,17 +215,16 @@
                     URL.revokeObjectURL(blobURL);
                 })
                 .catch(() => {
-                    // إذا حظر المتصفح التحميل المباشر يفتح الرابط بتبويب جديد كخيار احتياطي
                     window.open(url, '_blank');
                 });
         }
         
         function renderThemes() {
             if (savedThemes.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">لا يوجد ثيمات مضافة حالياً. أرسل أمراً للبوت ليتم التحديث فوراً!</p>';
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">لا يوجد ثيمات مضافة حالياً. أرسل ملف الثيم أو أمراً للبوت ليتم التحديث فوراً!</p>';
                 return;
             }
-            container.innerHTML = savedThemes.map((theme, index) => `
+            container.innerHTML = savedThemes.map(theme => `
                 <div class="theme-card">
                     <div class="theme-img-wrapper">
                         <img src="${theme.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80'}" class="theme-img" alt="معاينة">
@@ -246,6 +245,17 @@
 
         let lastUpdateId = parseInt(localStorage.getItem('last_update_id')) || 0;
 
+        async function getTelegramFileUrl(fileId) {
+            try {
+                const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${fileId}`);
+                const data = await res.json();
+                if (data.ok) {
+                    return `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${data.result.file_path}`;
+                }
+            } catch(e) { console.log(e); }
+            return "";
+        }
+
         async function checkBotUpdates() {
             try {
                 const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=3`);
@@ -258,18 +268,24 @@
                         lastUpdateId = update.update_id;
                         localStorage.setItem('last_update_id', lastUpdateId);
 
-                        let text = "";
-                        let chatId = "";
+                        if (!update.message) continue;
+                        
+                        const chatId = update.message.chat.id;
+                        let text = update.message.text || update.message.caption || "";
+                        let fileUrl = "";
+                        let title = "ثيم تيليجرام مميز";
+                        let desc = "ثيم احترافي مضاف مباشرة عبر ملف التيليجرام.";
 
-                        if (update.message) {
-                            chatId = update.message.chat.id;
-                            if (update.message.text) {
-                                text = update.message.text;
-                            } else if (update.message.caption) {
-                                text = update.message.caption;
+                        // 1. إذا قام المستخدم برفع ملف مباشر (.attheme)
+                        if (update.message.document) {
+                            const doc = update.message.document;
+                            if (doc.file_name.endsWith('.attheme') || doc.mime_type === 'application/x-tgtheme') {
+                                title = doc.file_name.replace('.attheme', '');
+                                fileUrl = await getTelegramFileUrl(doc.file_id);
                             }
                         }
 
+                        // 2. إذا كان الأمر نصياً عادياً عن طريق الـ /add
                         if(text.trim().startsWith('/add')) {
                             const parts = text.replace('/add', '').trim().split('|');
                             if(parts.length >= 4) {
@@ -279,21 +295,29 @@
                                     image: parts[2].trim(),
                                     file: parts[3].trim()
                                 };
-                                
                                 if (!savedThemes.some(t => t.file === newTheme.file)) {
                                     savedThemes.unshift(newTheme);
                                     hasNewThemes = true;
                                 }
-                                
-                                await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        chat_id: chatId,
-                                        text: `✅ كفو يا إبراهيم، تم إضافة ثيم (${newTheme.title}) بنجاح للموقع الحين!`
-                                    })
-                                });
+                                await sendConfirmation(chatId, newTheme.title);
+                                continue;
                             }
+                        }
+
+                        // إذا وجدنا ملفاً مباشراً مرفوعاً
+                        if (fileUrl) {
+                            const newTheme = {
+                                title: title,
+                                desc: desc,
+                                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80', // صورة افتراضية فخمة
+                                file: fileUrl
+                            };
+                            
+                            if (!savedThemes.some(t => t.file === newTheme.file)) {
+                                savedThemes.unshift(newTheme);
+                                hasNewThemes = true;
+                            }
+                            await sendConfirmation(chatId, newTheme.title);
                         }
                     }
 
@@ -302,7 +326,18 @@
                         renderThemes();
                     }
                 }
-            } catch (e) { console.log("Error fetching updates:", e); }
+            } catch (e) { console.log(e); }
+        }
+
+        async function sendConfirmation(chatId, themeTitle) {
+            await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: `✅ كفو يا إبراهيم، تم إضافة ثيم (${themeTitle}) بنجاح للموقع وبدأ التحميل المباشر!`
+                })
+            });
         }
 
         setInterval(checkBotUpdates, 2000);
