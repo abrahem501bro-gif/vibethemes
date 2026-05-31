@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة VibeBooks الرقمية | إبراهيم الشنوان</title>
-    
-    <!-- استدعاء مكتبات Firebase السحابية الرسمية -->
+    <title>منصة VibeBooks الرقمية | المطور إبراهيم الشنوان</title>
+    <!-- تضمين مكتبات Firebase الأساسية والمصادقة -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
         :root {
-            --bg-deep: #070a13;
-            --bg-card: #111827;
-            --bg-input: #1f2937;
+            --bg-deep: #0b0f19;
+            --bg-card: #151f32;
             --accent: #ffbc00;
             --accent-glow: rgba(255, 188, 0, 0.2);
             --text-main: #ffffff;
-            --text-muted: #9ca3af;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
         }
 
         body {
@@ -26,19 +26,22 @@
             font-family: 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         header {
-            background: radial-gradient(circle at top, #1f2937 0%, var(--bg-deep) 80%);
-            padding: 50px 20px;
+            background: radial-gradient(circle at top, #1e293b 0%, var(--bg-deep) 70%);
+            padding: 40px 20px;
             text-align: center;
-            border-bottom: 1px solid #1f2937;
+            border-bottom: 1px solid #1e293b;
         }
 
         header h1 {
-            font-size: 38px;
+            font-size: 36px;
             margin: 0;
-            font-weight: 800;
+            color: #fff;
         }
 
         header h1 span {
@@ -46,666 +49,517 @@
             text-shadow: 0 0 20px var(--accent-glow);
         }
 
-        header p {
-            color: var(--text-muted);
-            font-size: 16px;
-            margin-top: 12px;
-        }
-
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
-        }
-
-        /* لوحة تحكم سرية ومحمية */
-        .admin-panel {
-            background-color: var(--bg-card);
-            border: 1px solid #1f2937;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-
-        .admin-panel h2 {
-            margin-top: 0;
-            font-size: 20px;
-            color: var(--accent);
-            border-bottom: 1px solid #1f2937;
-            padding-bottom: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--bg-input);
-            border: 1px solid #374151;
-            border-radius: 8px;
-            color: #fff;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        .form-control:focus {
-            border-color: var(--accent);
-            outline: none;
-        }
-
-        .btn-submit {
-            background-color: var(--accent);
-            color: #000;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            font-size: 15px;
-            transition: all 0.2s;
-        }
-
-        .btn-submit:hover {
-            background-color: #e0a500;
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-
-        /* شبكة عرض الكتب */
-        .section-title {
-            font-size: 22px;
-            border-right: 4px solid var(--accent);
-            padding-right: 10px;
-            margin: 30px 0;
-        }
-
-        .books-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .book-card {
-            background-color: var(--bg-card);
-            border-radius: 14px;
-            overflow: hidden;
-            border: 1px solid #1f2937;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s, border-color 0.3s;
-        }
-
-        .book-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-        }
-
-        .book-cover {
-            height: 180px;
-            background: linear-gradient(45deg, #1f2937, #111827);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 50px;
-        }
-
-        .book-details {
-            padding: 20px;
             flex-grow: 1;
+        }
+
+        /* أزرار التحكم العلوي */
+        .nav-controls {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        .book-details h3 {
-            margin: 0 0 5px 0;
-            font-size: 18px;
-        }
-
-        .book-author {
-            color: var(--accent);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .book-details p {
+        .user-badge {
             color: var(--text-muted);
-            font-size: 13px;
-            line-height: 1.6;
-            margin: 0 0 20px 0;
-        }
-
-        .btn-download {
-            display: block;
-            text-align: center;
-            background-color: transparent;
-            color: #fff;
-            border: 1px solid #374151;
-            padding: 10px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
             font-size: 14px;
-            transition: all 0.2s;
+            background: #1e293b;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: none;
         }
 
-        .btn-download:hover {
-            background-color: var(--accent);
-            color: #000;
-            border-color: var(--accent);
+        .btn-group {
+            display: flex;
+            gap: 10px;
         }
 
-        .secret-trigger {
-            text-align: center;
-            margin-top: 40px;
-            color: #111827;
-            cursor: pointer;
-            font-size: 11px;
-            user-select: none;
-        }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>مكتبة Vibe<span>Books</span></h1>
-        <p>المنصة الرقمية الفخمة لتحميل وقراءة أفضل الروايات والكتب العالمية بصيغة PDF</p>
-    </header>
-
-    <div class="container">
-        
-        <!-- لوحة التحكم المحمية بكلمة سر (مخفية افتراضياً) -->
-        <div class="admin-panel" id="adminPanel" style="display: none;">
-            <h2>لوحة التحكم السرية لإضافة الكتب - إبراهيم الشنوان</h2>
-            <div class="form-group">
-                <label>اسم الرواية أو الكتاب كاملاً:</label>
-                <input type="text" id="bookTitle" class="form-control" placeholder="مثال: أرض زيكولا">
-            </div>
-            <div class="form-group">
-                <label>رابط ملف الـ PDF المباشر:</label>
-                <input type="url" id="bookFile" class="form-control" placeholder="ضع رابط تحميل ملف الـ PDF هنا">
-            </div>
-            <button class="btn-submit" onclick="addNewBook()">توليد النبذة ونشر الكتاب فوراً باستخدام الذكاء الاصطناعي</button>
-        </div>
-
-        <h2 class="section-title">الروايات والكتب المتاحة</h2>
-        <div class="books-grid" id="booksGrid">
-            <!-- الكتب تظهر هنا من قاعدة البيانات -->
-        </div>
-
-        <!-- زر سري أسفل الموقع يفتح لوحة التحكم عند الضغط عليه وكتابة كلمة السر -->
-        <div class="secret-trigger" onclick="unlockAdmin()">[ لوحة الإدارة ]</div>
-    </div>
-
-    <script>
-        // دمج مفاتيح الربط الصافية من لقطة شاشتك الاحترافية
-        const firebaseConfig = {
-            apiKey: "AIzaSyDn2Tw54AXy31uz7QZm",
-            authDomain: "vebi-f4fa3.firebaseapp.com",
-            projectId: "vebi-f4fa3",
-            storageBucket: "vebi-f4fa3.appspot.com",
-            messagingSenderId: "367356249117",
-            appId: "1:367356249117:web:fb7bf56d3b37996c14fac2"
-        };
-
-        // تشغيل ربط Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // محرك الذكاء الاصطناعي الذكي لاستخراج النبذة والمؤلف تلقائياً
-        function getAiDetails(title) {
-            const libraryAI = {
-                "أنتخريستوس": { author: "د. أحمد خالد مصطفى", desc: "رواية تاريخية مثيرة تمزج بين الواقع والخيال، وتكشف أسرار الحركات السرية التي قادت خيوط العالم عبر العصور البائدة." },
-                "أرض زيكولا": { author: "عمرو عبد الحميد", desc: "رحلة خيالية تحبس الأنفاس إلى أرض يتعامل أهلها بوحدات الذكاء بدلاً من المال؛ لتصبح حياتك مهددة بالذبح إن نفدت أفكارك." },
-                "اماريتا": { author: "عمرو عبد الحميد", desc: "الجزء الثاني والمكمل لملحمة أرض زيكولا، حيث تشتعل الأحداث وتصطدم العواطف بالقوانين الصارمة لتلك البلاد العجيبة." },
-                "في قلبي أنثى عبرية": { author: "د. خولة حمدي", desc: "رواية مستوحاة من أحداث واقعية دافئة وعميقة، تروي قصة حب وتلاقٍ روحي وتحديات فكرية بين تونس وجنوب لبنان." },
-                "يوتوبيا": { author: "د. أحمد خالد توفيق", desc: "رؤية ديستوبية سوداوية ومثيرة لمستقبل منعزل ينقسم فيه العالم بين ترف فاحش خلف الأسوار وفقر مدقع يلتهم ما حولها." },
-                "الخيميائي": { author: "باولو كويلو", desc: "تحفة فلسفية ملهمة تتبع خطى الراعي سانتياغو في رحلته الكبرى نحو أهرامات مصر بحثاً عن كنز والوصول لأسطورته الشخصية." },
-                "لأنك الله": { author: "علي بن جابر الفيفي", desc: "كتاب روحي يأخذ بيدك في رحلة تدبر عميقة لبعض أسماء الله الحسنى، لترى أثرها الدافئ في أدق تفاصيل حياتك اليومية." }
-            };
-
-            for (let key in libraryAI) {
-                if (title.includes(key)) return libraryAI[key];
-            }
-            return {
-                author: "مؤلف عالمي (تم التعرف تلقائياً)",
-                desc: `عمل أدبي مميز ومختار بعناية، متاح الحين للتحميل المباشر والقراءة بصيغة PDF بجودة عالية عبر المنصة.`
-            };
-        }
-
-        // قفل لوحة التحكم بكلمة سر مخصصة لك
-        function unlockAdmin() {
-            let password = prompt("أدخل كلمة السر الخاصة بإبراهيم لفتح لوحة التحكم:");
-            if(password === "501501") { // كلمة السر الخاصة بك الحين هي 501501
-                document.getElementById('adminPanel').style.display = 'block';
-                alert("تم التحقق بنجاح! لوحة التحكم جاهزة الحين.");
-            } else {
-                alert("كلمة السر خاطئة!");
-            }
-        }
-
-        // جلب وعرض الكتب تلقائياً من سيرفر Firebase السحابي
-        function loadBooks() {
-            db.collection("books").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-                const grid = document.getElementById('booksGrid');
-                if (snapshot.size === 0) {
-                    grid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">المكتبة بانتظار رفع أول كتاب الحين...</p>';
-                    return;
-                }
-                
-                grid.innerHTML = snapshot.docs.map(doc => {
-                    const book = doc.data();
-                    return `
-                        <div class="book-card">
-                            <div class="book-cover">📖</div>
-                            <div class="book-details">
-                                <div>
-                                    <h3>${book.title}</h3>
-                                    <div class="book-author">المؤلف: ${book.author}</div>
-                                    <p>${book.desc}</p>
-                                </div>
-                                <a href="${book.file}" target="_blank" class="btn-download">تحميل الرواية PDF</a>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            });
-        }
-
-        // إضافة كتاب جديد من داخل الموقع مباشرة
-        function addNewBook() {
-            const titleInput = document.getElementById('bookTitle').value.trim();
-            const fileInput = document.getElementById('bookFile').value.trim();
-
-            if(!titleInput || !fileInput) {
-                alert("يا غالي املأ اسم الكتاب ورابط الـ PDF أولاً!");
-                return;
-            }
-
-            const ai = getAiDetails(titleInput);
-
-            db.collection("books").add({
-                title: titleInput,
-                author: ai.author,
-                desc: ai.desc,
-                file: fileInput,
-                timestamp: new Date().getTime()
-            }).then(() => {
-                alert(`🔥 تم نشر رواية (${titleInput}) بنجاح في قاعدة البيانات والموقع!`);
-                document.getElementById('bookTitle').value = '';
-                document.getElementById('bookFile').value = '';
-            }).catch((error) => {
-                alert("حدث خطأ! يرجى التأكد من تفعيل Firestore في وضع الاختبار (Test mode).");
-            });
-        }
-
-        loadBooks();
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة VibeBooks الرقمية | إبراهيم الشنوان</title>
-    
-    <!-- استدعاء مكتبات Firebase السحابية الرسمية -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-    <style>
-        :root {
-            --bg-deep: #070a13;
-            --bg-card: #111827;
-            --bg-input: #1f2937;
-            --accent: #ffbc00;
-            --accent-glow: rgba(255, 188, 0, 0.2);
-            --text-main: #ffffff;
-            --text-muted: #9ca3af;
-        }
-
-        body {
-            background-color: var(--bg-deep);
+        .btn-action {
+            background: #1e293b;
             color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
+            border: 1px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
         }
 
-        header {
-            background: radial-gradient(circle at top, #1f2937 0%, var(--bg-deep) 80%);
-            padding: 50px 20px;
-            text-align: center;
-            border-bottom: 1px solid #1f2937;
+        .btn-action:hover {
+            background: var(--accent);
+            color: #000;
         }
 
-        header h1 {
-            font-size: 38px;
-            margin: 0;
-            font-weight: 800;
+        .btn-admin-only {
+            border-color: #ef4444;
+        }
+        .btn-admin-only:hover {
+            background: #ef4444;
+            color: #fff;
         }
 
-        header h1 span {
-            color: var(--accent);
-            text-shadow: 0 0 20px var(--accent-glow);
+        /* شبكة عرض الكتب */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
         }
 
-        header p {
-            color: var(--text-muted);
-            font-size: 16px;
-            margin-top: 12px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        /* لوحة تحكم سرية ومحمية */
-        .admin-panel {
+        .book-card {
             background-color: var(--bg-card);
-            border: 1px solid #1f2937;
             border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 1px solid #1e293b;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
-        .admin-panel h2 {
-            margin-top: 0;
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .book-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-title {
             font-size: 20px;
+            margin: 0 0 5px 0;
+            color: #fff;
+        }
+
+        .book-author {
+            font-size: 13px;
             color: var(--accent);
-            border-bottom: 1px solid #1f2937;
-            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .book-desc {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .btn-download {
+            background: var(--accent);
+            color: #000;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-approve {
+            background: var(--success);
+            color: #fff;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* واجهات المودال (Popup) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid var(--accent);
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px; left: 15px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 22px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            font-size: 14px;
             color: var(--text-muted);
         }
 
-        .form-control {
+        .form-group input, .form-group textarea {
             width: 100%;
             padding: 12px;
-            background-color: var(--bg-input);
-            border: 1px solid #374151;
+            background: #0b0f19;
+            border: 1px solid #1e293b;
             border-radius: 8px;
             color: #fff;
             box-sizing: border-box;
-            font-size: 14px;
         }
 
-        .form-control:focus {
+        .form-group input:focus, .form-group textarea:focus {
             border-color: var(--accent);
             outline: none;
         }
 
         .btn-submit {
-            background-color: var(--accent);
+            background: var(--accent);
             color: #000;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
             width: 100%;
-            font-size: 15px;
-            transition: all 0.2s;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
         }
 
-        .btn-submit:hover {
-            background-color: #e0a500;
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-
-        /* شبكة عرض الكتب */
-        .section-title {
-            font-size: 22px;
-            border-right: 4px solid var(--accent);
-            padding-right: 10px;
-            margin: 30px 0;
-        }
-
-        .books-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .book-card {
-            background-color: var(--bg-card);
-            border-radius: 14px;
-            overflow: hidden;
-            border: 1px solid #1f2937;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s, border-color 0.3s;
-        }
-
-        .book-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-        }
-
-        .book-cover {
-            height: 180px;
-            background: linear-gradient(45deg, #1f2937, #111827);
+        /* أزرار التواصل الاجتماعي للدخول */
+        .social-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 50px;
-        }
-
-        .book-details {
-            padding: 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .book-details h3 {
-            margin: 0 0 5px 0;
-            font-size: 18px;
-        }
-
-        .book-author {
-            color: var(--accent);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .book-details p {
-            color: var(--text-muted);
-            font-size: 13px;
-            line-height: 1.6;
-            margin: 0 0 20px 0;
-        }
-
-        .btn-download {
-            display: block;
-            text-align: center;
-            background-color: transparent;
-            color: #fff;
-            border: 1px solid #374151;
-            padding: 10px;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            border: none;
             border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .btn-download:hover {
-            background-color: var(--accent);
-            color: #000;
-            border-color: var(--accent);
-        }
-
-        .secret-trigger {
-            text-align: center;
-            margin-top: 40px;
-            color: #111827;
+            font-weight: bold;
             cursor: pointer;
-            font-size: 11px;
-            user-select: none;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .btn-google { background-color: #df4a32; }
+        .btn-facebook { background-color: #3b5998; }
+        .btn-logout { background-color: #ef4444; }
+
+        /* تذييل الموقع الافتخاري للحقوق */
+        footer {
+            background-color: #060911;
+            padding: 25px;
+            text-align: center;
+            border-top: 1px solid #1e293b;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        footer strong {
+            color: var(--accent);
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>مكتبة Vibe<span>Books</span></h1>
-        <p>المنصة الرقمية الفخمة لتحميل وقراءة أفضل الروايات والكتب العالمية بصيغة PDF</p>
+        <h1>مكتبة <span>VibeBooks</span> الرقمية</h1>
+        <p style="color: var(--text-muted); margin-top: 10px;">منصة النشر الحرة والقراءة التفاعلية</p>
     </header>
 
     <div class="container">
-        
-        <!-- لوحة التحكم المحمية بكلمة سر (مخفية افتراضياً) -->
-        <div class="admin-panel" id="adminPanel" style="display: none;">
-            <h2>لوحة التحكم السرية لإضافة الكتب - إبراهيم الشنوان</h2>
-            <div class="form-group">
-                <label>اسم الرواية أو الكتاب كاملاً:</label>
-                <input type="text" id="bookTitle" class="form-control" placeholder="مثال: أرض زيكولا">
+        <div class="nav-controls">
+            <div class="user-badge" id="userBadge">أهلاً بك..</div>
+            <div class="btn-group">
+                <button class="btn-action" id="loginNavBtn" onclick="openModal('authModal')">تسجيل الدخول</button>
+                <button class="btn-action" id="uploadNavBtn" onclick="openModal('uploadModal')" style="display:none;">اقتراح كتاب للنشر</button>
+                <button class="btn-action btn-admin-only" id="adminNavBtn" onclick="openModal('adminModal')">لوحة مراجعة المالك</button>
             </div>
-            <div class="form-group">
-                <label>رابط ملف الـ PDF المباشر:</label>
-                <input type="url" id="bookFile" class="form-control" placeholder="ضع رابط تحميل ملف الـ PDF هنا">
-            </div>
-            <button class="btn-submit" onclick="addNewBook()">توليد النبذة ونشر الكتاب فوراً باستخدام الذكاء الاصطناعي</button>
         </div>
 
-        <h2 class="section-title">الروايات والكتب المتاحة</h2>
+        <h2 id="sectionTitle" style="margin-bottom: 20px; font-size: 22px; border-right: 4px solid var(--accent); padding-right: 10px;">الكتب المعتمدة والمتاحة</h2>
         <div class="books-grid" id="booksGrid">
-            <!-- الكتب تظهر هنا من قاعدة البيانات -->
+            <!-- الهيكل البرمجي يدرج الكتب الحية هنا -->
         </div>
-
-        <!-- زر سري أسفل الموقع يفتح لوحة التحكم عند الضغط عليه وكتابة كلمة السر -->
-        <div class="secret-trigger" onclick="unlockAdmin()">[ لوحة الإدارة ]</div>
     </div>
 
+    <!-- مودال 1: تسجيل دخول المستخدمين (جوجل / فيسبوك) -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('authModal')">&times;</span>
+            <h3 style="margin-top:0; color: var(--accent); text-align:center;">تسجيل دخول الزوار والناشرين</h3>
+            <p style="color: var(--text-muted); font-size: 13px; text-align:center; margin-bottom: 25px;">قم بتسجيل حسابك لتتمكن من رفع واقتراح الكتب داخل المنصة</p>
+            
+            <div id="authOptions">
+                <button class="social-btn btn-google" onclick="loginWithProvider('google')">تسجيل الدخول بواسطة Google</button>
+                <button class="social-btn btn-facebook" onclick="loginWithProvider('facebook')">تسجيل الدخول بواسطة Facebook</button>
+            </div>
+
+            <div id="logoutOption" style="display: none;">
+                <button class="social-btn btn-logout" onclick="logoutUser()">تسجيل خروج الحساب</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال 2: نموذج رفع واقتراح الكتب من الأعضاء -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('uploadModal')">&times;</span>
+            <h3 style="margin-top:0; color: var(--accent);">اقتراح رواية / كتاب جديد</h3>
+            <p style="color: var(--text-muted); font-size:12px; margin-bottom:15px;">سيتم إرسال الكتاب لمالك الموقع ومراجعته قبل ظهوره العام للجمهور.</p>
+            <div class="form-group">
+                <label>عنوان الكتاب</label>
+                <input type="text" id="bookTitle" placeholder="مثال: أرض زيكولا">
+            </div>
+            <div class="form-group">
+                <label>نبذة ومقدمة مختصرة</label>
+                <textarea id="bookDesc" rows="3" placeholder="اكتب وصفاً جذاباً للكتاب..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>رابط تحميل الـ PDF المباشر</label>
+                <input type="url" id="bookUrl" placeholder="https://example.com/file.pdf">
+            </div>
+            <button class="btn-submit" onclick="submitBookSuggestion()">إرسال للمراجعة الفورية</button>
+        </div>
+    </div>
+
+    <!-- مودال 3: لوحة تحكم المالك الخاصة بك (إبراهيم) للموافقة على الكتب -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('adminModal')">&times;</span>
+            <div id="adminLoginSection">
+                <h3 style="margin-top:0; color: #ef4444;">صلاحيات مالك المنصة</h3>
+                <div class="form-group">
+                    <label>رمز التحقق للمالك</label>
+                    <input type="password" id="adminPassword" placeholder="أدخل الرمز السري">
+                </div>
+                <button class="btn-submit" style="background:#ef4444; color:#fff;" onclick="verifyAdminLogin()">دخول لوحة الاعتمادات</button>
+            </div>
+            <div id="adminPanelSection" style="display: none;">
+                <h3 style="margin-top:0; color: var(--success);">طلبات النشر المعلقة حالياً</h3>
+                <p style="color:var(--text-muted); font-size:13px;">اضغط على "موافقة واعتماد" ليظهر الكتاب مباشرة بالصفحة الرئيسية للكل.</p>
+                <div id="pendingContainer" style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
+                    <!-- هنا تظهر الطلبات المعلقة برمجياً -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>جميع الحقوق محفوظة © 2026 | تم تصميم وتطوير الموقع بواسطة المهندس <strong>إبراهيم الشنوان</strong></p>
+    </footer>
+
     <script>
-        // دمج مفاتيح الربط الصافية من لقطة شاشتك الاحترافية
+        // إعداد وتكوين الـ Firebase المربوط بحسابك
         const firebaseConfig = {
-            apiKey: "AIzaSyDn2Tw54AXy31uz7QZm",
+            apiKey: "AIzaSyAs-V40A6vR_TdfE3L2e7lB9mF8gH2jK1o",
             authDomain: "vebi-f4fa3.firebaseapp.com",
             projectId: "vebi-f4fa3",
             storageBucket: "vebi-f4fa3.appspot.com",
-            messagingSenderId: "367356249117",
-            appId: "1:367356249117:web:fb7bf56d3b37996c14fac2"
+            messagingSenderId: "367354921084",
+            appId: "1:367354921084:web:600e5728a5061ff360cc27"
         };
-
-        // تشغيل ربط Firebase
+        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
-        // محرك الذكاء الاصطناعي الذكي لاستخراج النبذة والمؤلف تلقائياً
-        function getAiDetails(title) {
-            const libraryAI = {
-                "أنتخريستوس": { author: "د. أحمد خالد مصطفى", desc: "رواية تاريخية مثيرة تمزج بين الواقع والخيال، وتكشف أسرار الحركات السرية التي قادت خيوط العالم عبر العصور البائدة." },
-                "أرض زيكولا": { author: "عمرو عبد الحميد", desc: "رحلة خيالية تحبس الأنفاس إلى أرض يتعامل أهلها بوحدات الذكاء بدلاً من المال؛ لتصبح حياتك مهددة بالذبح إن نفدت أفكارك." },
-                "اماريتا": { author: "عمرو عبد الحميد", desc: "الجزء الثاني والمكمل لملحمة أرض زيكولا، حيث تشتعل الأحداث وتصطدم العواطف بالقوانين الصارمة لتلك البلاد العجيبة." },
-                "في قلبي أنثى عبرية": { author: "د. خولة حمدي", desc: "رواية مستوحاة من أحداث واقعية دافئة وعميقة، تروي قصة حب وتلاقٍ روحي وتحديات فكرية بين تونس وجنوب لبنان." },
-                "يوتوبيا": { author: "د. أحمد خالد توفيق", desc: "رؤية ديستوبية سوداوية ومثيرة لمستقبل منعزل ينقسم فيه العالم بين ترف فاحش خلف الأسوار وفقر مدقع يلتهم ما حولها." },
-                "الخيميائي": { author: "باولو كويلو", desc: "تحفة فلسفية ملهمة تتبع خطى الراعي سانتياغو في رحلته الكبرى نحو أهرامات مصر بحثاً عن كنز والوصول لأسطورته الشخصية." },
-                "لأنك الله": { author: "علي بن جابر الفيفي", desc: "كتاب روحي يأخذ بيدك في رحلة تدبر عميقة لبعض أسماء الله الحسنى، لترى أثرها الدافئ في أدق تفاصيل حياتك اليومية." }
-            };
+        let currentUser = null;
+        let isAdminAuthenticated = false;
 
-            for (let key in libraryAI) {
-                if (title.includes(key)) return libraryAI[key];
-            }
-            return {
-                author: "مؤلف عالمي (تم التعرف تلقائياً)",
-                desc: `عمل أدبي مميز ومختار بعناية، متاح الحين للتحميل المباشر والقراءة بصيغة PDF بجودة عالية عبر المنصة.`
-            };
-        }
+        // مراقبة حالة تسجيل دخول المستخدمين
+        auth.onAuthStateChanged((user) => {
+            const userBadge = document.getElementById("userBadge");
+            const loginNavBtn = document.getElementById("loginNavBtn");
+            const uploadNavBtn = document.getElementById("uploadNavBtn");
+            const authOptions = document.getElementById("authOptions");
+            const logoutOption = document.getElementById("logoutOption");
 
-        // قفل لوحة التحكم بكلمة سر مخصصة لك
-        function unlockAdmin() {
-            let password = prompt("أدخل كلمة السر الخاصة بإبراهيم لفتح لوحة التحكم:");
-            if(password === "501501") { // كلمة السر الخاصة بك الحين هي 501501
-                document.getElementById('adminPanel').style.display = 'block';
-                alert("تم التحقق بنجاح! لوحة التحكم جاهزة الحين.");
+            if (user) {
+                currentUser = user;
+                userBadge.innerText = `العضو: ${user.displayName}`;
+                userBadge.style.display = "block";
+                loginNavBtn.innerText = "الحساب";
+                uploadNavBtn.style.display = "block";
+                authOptions.style.display = "none";
+                logoutOption.style.display = "block";
             } else {
-                alert("كلمة السر خاطئة!");
+                currentUser = null;
+                userBadge.style.display = "none";
+                loginNavBtn.innerText = "تسجيل الدخول";
+                uploadNavBtn.style.display = "none";
+                authOptions.style.display = "block";
+                logoutOption.style.display = "none";
             }
+        });
+
+        // دوال تسجيل الدخول عبر Google أو Facebook
+        function loginWithProvider(providerName) {
+            let provider;
+            if(providerName === 'google') {
+                provider = new firebase.auth.GoogleAuthProvider();
+            } else if(providerName === 'facebook') {
+                provider = new firebase.auth.FacebookAuthProvider();
+            }
+
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    alert(`مرحباً بك يا ${result.user.displayName}، تم تسجيل دخولك بنجاح!`);
+                    closeModal('authModal');
+                })
+                .catch((error) => {
+                    alert(`حدث خطأ أثناء تسجيل الدخول: ${error.message}`);
+                });
         }
 
-        // جلب وعرض الكتب تلقائياً من سيرفر Firebase السحابي
-        function loadBooks() {
-            db.collection("books").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-                const grid = document.getElementById('booksGrid');
-                if (snapshot.size === 0) {
-                    grid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">المكتبة بانتظار رفع أول كتاب الحين...</p>';
-                    return;
-                }
-                
-                grid.innerHTML = snapshot.docs.map(doc => {
-                    const book = doc.data();
-                    return `
-                        <div class="book-card">
-                            <div class="book-cover">📖</div>
-                            <div class="book-details">
-                                <div>
-                                    <h3>${book.title}</h3>
-                                    <div class="book-author">المؤلف: ${book.author}</div>
-                                    <p>${book.desc}</p>
-                                </div>
-                                <a href="${book.file}" target="_blank" class="btn-download">تحميل الرواية PDF</a>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+        function logoutUser() {
+            auth.signOut().then(() => {
+                alert("تم تسجيل الخروج بنجاح.");
+                closeModal('authModal');
             });
         }
 
-        // إضافة كتاب جديد من داخل الموقع مباشرة
-        function addNewBook() {
-            const titleInput = document.getElementById('bookTitle').value.trim();
-            const fileInput = document.getElementById('bookFile').value.trim();
-
-            if(!titleInput || !fileInput) {
-                alert("يا غالي املأ اسم الكتاب ورابط الـ PDF أولاً!");
+        // جلب وعرض الكتب "المعتمدة فقط" في الصفحة الرئيسية للجمهور
+        db.collection("books").where("status", "==", "approved").orderBy("createdAt", "desc")
+        .onSnapshot((snapshot) => {
+            const booksGrid = document.getElementById("booksGrid");
+            booksGrid.innerHTML = "";
+            
+            if(snapshot.empty) {
+                booksGrid.innerHTML = `<p style="color:var(--text-muted); text-align:center; grid-column:1/-1;">لا توجد روايات معتمدة ومتاحة حالياً بالمكتبة.</p>`;
                 return;
             }
 
-            const ai = getAiDetails(titleInput);
+            snapshot.forEach((doc) => {
+                const book = doc.data();
+                const card = document.createElement("div");
+                card.className = "book-card";
+                card.innerHTML = `
+                    <div class="book-info">
+                        <h4 class="book-title">${book.title}</h4>
+                        <div class="book-author">بواسطة: ${book.submittedBy}</div>
+                        <p class="book-desc">${book.description}</p>
+                        <a href="${book.pdfUrl}" target="_blank" class="btn-download">تحميل وقراءة PDF</a>
+                    </div>
+                `;
+                booksGrid.appendChild(card);
+            });
+        });
+
+        // دالة اقتراح ورفع كتاب جديد من قبل الأعضاء المسجلين
+        function submitBookSuggestion() {
+            if(!currentUser) {
+                alert("يجب عليك تسجيل الدخول أولاً لتتمكن من اقتراح كتاب!");
+                return;
+            }
+
+            const title = document.getElementById("bookTitle").value.trim();
+            const desc = document.getElementById("bookDesc").value.trim();
+            const url = document.getElementById("bookUrl").value.trim();
+
+            if(!title || !desc || !url) {
+                alert("الرجاء إدخال كافة البيانات المطلوبة لإرسال الطلب!");
+                return;
+            }
 
             db.collection("books").add({
-                title: titleInput,
-                author: ai.author,
-                desc: ai.desc,
-                file: fileInput,
-                timestamp: new Date().getTime()
-            }).then(() => {
-                alert(`🔥 تم نشر رواية (${titleInput}) بنجاح في قاعدة البيانات والموقع!`);
-                document.getElementById('bookTitle').value = '';
-                document.getElementById('bookFile').value = '';
-            }).catch((error) => {
-                alert("حدث خطأ! يرجى التأكد من تفعيل Firestore في وضع الاختبار (Test mode).");
+                title: title,
+                description: desc,
+                pdfUrl: url,
+                status: "pending", // حالة معلقة بانتظار موافقة إبراهيم
+                userId: currentUser.uid,
+                submittedBy: currentUser.displayName || "عضو مسجل",
+                createdAt: new Date()
+            })
+            .then(() => {
+                alert("تم إرسال اقتراحك بنجاح لمالك المنصة! سيتم عرضه فور مراجعته والموافقة عليه.");
+                document.getElementById("bookTitle").value = "";
+                document.getElementById("bookDesc").value = "";
+                document.getElementById("bookUrl").value = "";
+                closeModal('uploadModal');
+            })
+            .catch((err) => {
+                alert("خطأ أثناء الإرسال، تأكد من ضبط الـ Rules بسيرفر Firebase.");
             });
         }
 
-        loadBooks();
+        // تحقق دخولك كمالك وإظهار الكتب المعلقة للموافقة
+        function verifyAdminLogin() {
+            const pass = document.getElementById("adminPassword").value;
+            if(pass === "501501") {
+                isAdminAuthenticated = true;
+                document.getElementById("adminLoginSection").style.display = "none";
+                document.getElementById("adminPanelSection").style.display = "block";
+                document.getElementById("adminPassword").value = "";
+                listenToPendingBooks();
+            } else {
+                alert("الرمز السري للمالك خاطئ!");
+            }
+        }
+
+        // جلب الكتب المعلقة لكي يوافق عليها إبراهيم
+        function listenToPendingBooks() {
+            db.collection("books").where("status", "==", "pending").orderBy("createdAt", "desc")
+            .onSnapshot((snapshot) => {
+                const container = document.getElementById("pendingContainer");
+                container.innerHTML = "";
+
+                if(snapshot.empty) {
+                    container.innerHTML = `<p style="color:var(--text-muted); text-align:center; font-size:13px;">لا توجد أي طلبات نشر معلقة حالياً.</p>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const book = doc.data();
+                    const item = document.createElement("div");
+                    item.style = "background:#0b0f19; padding:15px; border-radius:8px; margin-bottom:12px; border:1px solid #1e293b;";
+                    item.innerHTML = `
+                        <div style="font-weight:bold; color:#fff;">${book.title}</div>
+                        <div style="font-size:11px; color:var(--accent);">المرسل: ${book.submittedBy}</div>
+                        <button class="btn-approve" onclick="approveBook('${doc.id}')">موافقة واعتماد النشر فوراً</button>
+                    `;
+                    container.appendChild(item);
+                });
+            });
+        }
+
+        // اعتماد الكتاب وتغيير حالته ليظهر بالواجهة العامة
+        function approveBook(docId) {
+            db.collection("books").doc(docId).update({
+                status: "approved"
+            })
+            .then(() => {
+                alert("تمت الموافقة على الرواية ونشرها بالصفحة الرئيسية بنجاح!");
+            })
+            .catch((err) => {
+                alert("حدث خطأ أثناء الاعتماد.");
+            });
+        }
+
+        // دوال النوافذ المنبثقة
+        function openModal(id) {
+            document.getElementById(id).style.display = "flex";
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
     </script>
 </body>
 </html>
