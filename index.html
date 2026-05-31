@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VibeBooks | مكتبة إبراهيم الشنوان</title>
+    <title>VibeBooks | المكتبة الرقمية المتكاملة</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -11,33 +11,31 @@
     <style>
         :root { --bg: #0b0f19; --card: #151c2e; --primary: #3b82f6; --accent: #10b981; --danger: #ef4444; --text: #f3f4f6; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-        header { background: #020617; padding: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); }
-        .container { max-width: 1200px; margin: auto; padding: 20px; }
-        .hero { text-align: center; padding: 50px 20px; }
-        .btn { background: var(--primary); color: white; padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn:hover { background: #2563eb; transform: scale(1.05); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        header { background: #020617; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); }
+        .container { max-width: 1100px; margin: auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
         .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #2e3a56; }
+        .btn { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: var(--card); padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; }
         .hidden { display: none !important; }
-        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #334155; background: #0b0f19; color: white; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; background: #0b0f19; color: white; border: 1px solid #334155; }
     </style>
 </head>
 <body>
 
 <header>
     <h2 style="color:var(--primary)">VibeBooks 📚</h2>
-    <div id="auth-area"><button class="btn" onclick="login()">دخول</button></div>
+    <div id="auth-area"><button class="btn" onclick="login()">تسجيل الدخول</button></div>
 </header>
 
 <div class="container">
-    <div class="hero">
+    <div style="text-align:center; padding:50px;">
         <h1>مكتبة الأحلام الرقمية</h1>
-        <button id="suggest-btn" class="btn hidden" onclick="openModal('suggest-modal')">💡 اقتراح كتاب للنشر</button>
+        <button id="suggest-btn" class="btn hidden" onclick="document.getElementById('suggest-modal').style.display='flex'">💡 اقتراح كتاب للنشر</button>
     </div>
     
-    <div id="admin-section" class="hidden" style="background:#1e293b; padding:20px; border-radius:15px; margin-bottom:30px; border: 1px solid var(--accent);">
+    <div id="admin-section" class="hidden" style="background:#0f172a; padding:20px; border-radius:15px; border: 1px solid var(--accent);">
         <h2 style="color:var(--accent)">لوحة التحكم (المالك)</h2>
         <div id="pending-grid" class="grid"></div>
     </div>
@@ -45,15 +43,16 @@
     <h2>الكتب المتاحة</h2>
     <div id="books-grid" class="grid"></div>
 </div>
+
 <div id="suggest-modal" class="modal">
     <div class="modal-content">
-        <h3>اقتراح كتاب جديد</h3>
+        <h3>إضافة كتاب جديد</h3>
         <input type="text" id="b-title" placeholder="عنوان الكتاب">
         <textarea id="b-desc" placeholder="وصف قصير"></textarea>
-        <input type="url" id="b-url" placeholder="رابط التحميل PDF">
+        <input type="url" id="b-url" placeholder="رابط PDF">
         <input type="url" id="b-img" placeholder="رابط صورة الغلاف">
         <button class="btn" onclick="submitBook()">إرسال الطلب</button>
-        <button class="btn" style="background:var(--danger)" onclick="closeModal()">إلغاء</button>
+        <button class="btn" style="background:var(--danger)" onclick="this.parentElement.parentElement.style.display='none'">إغلاق</button>
     </div>
 </div>
 
@@ -71,9 +70,13 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ 'prompt': 'select_account' });
 
-    function login() { auth.signInWithPopup(provider); }
+    // حل مشكلة النطاق: استخدام Redirect
+    function login() { auth.signInWithRedirect(provider); }
+
+    auth.getRedirectResult().then(result => {
+        if (result.user) console.log("تم الدخول!");
+    }).catch(e => alert(e.message));
 
     auth.onAuthStateChanged(user => {
         const area = document.getElementById('auth-area');
@@ -86,18 +89,14 @@
         }
     });
 
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-
     function submitBook() {
-        const title = document.getElementById('b-title').value;
-        const desc = document.getElementById('b-desc').value;
-        const url = document.getElementById('b-url').value;
-        const img = document.getElementById('b-img').value;
-        db.collection('books').add({ title, desc, url, img, status: 'pending', suggestedBy: auth.currentUser.displayName }).then(() => {
-            alert("تم إرسال الكتاب للمراجعة!");
-            closeModal();
-        });
+        db.collection('books').add({
+            title: document.getElementById('b-title').value,
+            desc: document.getElementById('b-desc').value,
+            url: document.getElementById('b-url').value,
+            img: document.getElementById('b-img').value,
+            status: 'pending'
+        }).then(() => { alert("تم الإرسال!"); location.reload(); });
     }
 
     db.collection("books").onSnapshot(snap => {
@@ -108,11 +107,10 @@
             const b = doc.data();
             const card = `<div class="card"><img src="${b.img}" style="width:100%; border-radius:10px;"><h3>${b.title}</h3><p>${b.desc}</p><a href="${b.url}" class="btn">تحميل</a></div>`;
             if(b.status === 'approved') grid.innerHTML += card;
-            else pending.innerHTML += `<div class="card"><h3>${b.title}</h3><button class="btn" onclick="approve('${doc.id}')">✅ نشر</button></div>`;
+            else pending.innerHTML += `<div class="card"><h3>${b.title}</h3><button class="btn" onclick="db.collection('books').doc('${doc.id}').update({status:'approved'})">✅ نشر</button></div>`;
         });
     });
-
-    function approve(id) { db.collection('books').doc(id).update({status: 'approved'}); }
 </script>
+
 </body>
 </html>
