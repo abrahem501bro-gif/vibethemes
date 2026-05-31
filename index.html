@@ -2,59 +2,105 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>VibeThemes - مكتبة الأفكار</title>
-    <!-- Firebase SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeThemes | المكتبة الرقمية المتكاملة</title>
+    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- الخطوط -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; text-align: center; background: #0b0f19; color: white; padding: 20px; }
-        .btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-top: 20px; }
+        /* CSS الكامل والأسطوري */
+        :root { --bg: #0b0f19; --card: #151c2e; --primary: #3b82f6; --accent: #10b981; --text: #f3f4f6; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        header { background: var(--card); padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); }
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #2e3a56; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .btn { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <h1>مرحباً بك في VibeThemes</h1>
-    <div id="auth-status">جاري التحميل...</div>
-    <button class="btn" id="login-btn" onclick="login()">تسجيل الدخول</button>
+<header>
+    <div style="font-size: 24px; font-weight: 900; color: var(--primary);">VibeThemes 📚</div>
+    <div id="auth-area"><button class="btn" onclick="login()">تسجيل الدخول</button></div>
+</header>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDn2Tw54",
-            authDomain: "vebi-f4fa3.firebaseapp.com",
-            projectId: "vebi-f4fa3",
-            storageBucket: "vebi-f4fa3.appspot.com",
-            messagingSenderId: "914837852533",
-            appId: "1:914837852533:web:e1cccc5cff378d879fc33c"
-        };
+<div class="container">
+    <div style="text-align: center; margin: 40px 0;">
+        <h1>أهلاً بك في مكتبتك الرقمية</h1>
+        <button id="suggest-btn" class="btn hidden" onclick="openModal('suggest-modal')">💡 اقتراح كتاب جديد</button>
+    </div>
+    <div class="grid" id="books-grid"></div>
+</div>
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const provider = new firebase.auth.GoogleAuthProvider();
+<!-- Modal -->
+<div id="suggest-modal" class="modal">
+    <div class="modal-content">
+        <h3>إضافة كتاب جديد</h3>
+        <input type="text" id="title" placeholder="عنوان الكتاب" style="width:100%; padding:10px; margin-bottom:10px;">
+        <textarea id="desc" placeholder="الوصف" style="width:100%; padding:10px; margin-bottom:10px;"></textarea>
+        <button class="btn" onclick="submitBook()">إرسال</button>
+        <button class="btn" style="background:#ef4444" onclick="closeModal()">إغلاق</button>
+    </div>
+</div>
 
-        // التعديل السحري لتجاوز مشكلة النطاق
-        provider.setCustomParameters({
-            'prompt': 'select_account'
-        });
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDn2Tw54",
+        authDomain: "vebi-f4fa3.firebaseapp.com",
+        projectId: "vebi-f4fa3",
+        storageBucket: "vebi-f4fa3.appspot.com",
+        messagingSenderId: "914837852533",
+        appId: "1:914837852533:web:e1cccc5cff378d879fc33c"
+    };
 
-        function login() {
-            auth.signInWithPopup(provider).catch(error => {
-                console.error(error);
-                alert("حدث خطأ: " + error.message);
-            });
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    // الخدعة الأمنية لتجاوز النطاق
+    provider.setCustomParameters({ 'prompt': 'select_account' });
+
+    function login() { auth.signInWithPopup(provider).catch(e => alert(e.message)); }
+    
+    auth.onAuthStateChanged(user => {
+        const area = document.getElementById('auth-area');
+        if (user) {
+            area.innerHTML = `<span>${user.displayName}</span> <button class="btn" onclick="auth.signOut()">خروج</button>`;
+            document.getElementById('suggest-btn').classList.remove('hidden');
         }
+    });
 
-        auth.onAuthStateChanged(user => {
-            const status = document.getElementById('auth-status');
-            const btn = document.getElementById('login-btn');
-            if (user) {
-                status.innerHTML = "أهلاً بك: " + user.displayName;
-                btn.style.display = 'none';
-            } else {
-                status.innerHTML = "يرجى تسجيل الدخول للبدء";
-                btn.style.display = 'inline-block';
-            }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+    function submitBook() {
+        const title = document.getElementById('title').value;
+        const desc = document.getElementById('desc').value;
+        db.collection('books').add({ title, desc, status: 'pending' }).then(() => {
+            alert("تم إرسال الطلب!");
+            closeModal();
         });
-    </script>
+    }
+
+    // جلب الكتب
+    db.collection('books').where('status', '==', 'approved').onSnapshot(snap => {
+        const grid = document.getElementById('books-grid');
+        grid.innerHTML = '';
+        snap.forEach(doc => {
+            const b = doc.data();
+            grid.innerHTML += `<div class="card"><h2>${b.title}</h2><p>${b.desc}</p></div>`;
+        });
+    });
+</script>
+
 </body>
 </html>
