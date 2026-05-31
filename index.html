@@ -2,431 +2,59 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة VibeBooks الرقمية</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
-
+    <title>VibeThemes - مكتبة الأفكار</title>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
     <style>
-        :root {
-            --bg-color: #0b0f19;
-            --card-bg: #151c2e;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --accent: #10b981;
-            --danger: #ef4444;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding-bottom: 60px;
-        }
-
-        header {
-            background-color: var(--card-bg);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--primary);
-            text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-1px);
-        }
-
-        .btn-danger { background-color: var(--danger); }
-        .btn-danger:hover { background-color: #dc2626; }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 2px solid var(--primary);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .hero-section {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .hero-section h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .hero-section p {
-            color: var(--text-muted);
-        }
-
-        .actions-bar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        /* نافذة المنبثقة (Modal) */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background-color: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            position: relative;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 15px; left: 15px;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-muted);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            background-color: var(--bg-color);
-            border: 1px solid #2e3a56;
-            border-radius: 6px;
-            color: white;
-            font-size: 14px;
-        }
-
-        /* شبكة عرض الكتب */
-        .books-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .book-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            border: 1px solid #1e293b;
-            transition: transform 0.2s;
-        }
-
-        .book-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary);
-        }
-
-        .book-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .book-desc {
-            color: var(--text-muted);
-            font-size: 14px;
-            flex-grow: 1;
-            line-height: 1.6;
-        }
-
-        .admin-section {
-            margin-top: 50px;
-            border-top: 2px dashed #2e3a56;
-            padding-top: 30px;
-        }
-
-        .hidden { display: none !important; }
+        body { font-family: sans-serif; text-align: center; background: #0b0f19; color: white; padding: 20px; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">VibeBooks 📚</div>
-        <div id="auth-area">
-            <button class="btn" id="login-btn" onclick="login()">تسجيل الدخول بجوجل</button>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="hero-section">
-            <h1>مرحباً بك في مكتبتنا الرقمية</h1>
-            <p>تصفح وحمل الكتب والروايات مجاناً، أو شاركنا كتبك المفضلة</p>
-        </div>
-
-        <div class="actions-bar">
-            <button class="btn hidden" id="suggest-btn" onclick="openModal('suggest-modal')">💡 اقتراح كتاب للنشر</button>
-            <button class="btn" style="background-color: var(--card-bg); border: 1px solid var(--primary);" onclick="openModal('admin-login-modal')">👑 لوحة التحكم</button>
-        </div>
-
-        <h2>الكتب المتوفرة 📖</h2>
-        <br>
-        <div class="books-grid" id="approved-books"></div>
-
-        <div id="admin-panel" class="admin-section hidden">
-            <h2 style="color: var(--accent)">الطلبات المعلقة للمراجعة (خاص بالمالك) 🛠️</h2>
-            <br>
-            <div class="books-grid" id="pending-books"></div>
-        </div>
-    </div>
-
-    <div class="modal" id="suggest-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('suggest-modal')">&times;</span>
-            <h3 style="margin-bottom: 15px;">اقتراح كتاب جديد</h3>
-            <div class="form-group">
-                <label>اسم الكتاب / الرواية</label>
-                <input type="text" id="book-title-input">
-            </div>
-            <div class="form-group">
-                <label>وصف قصير</label>
-                <textarea id="book-desc-input" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label>رابط التحميل (PDF)</label>
-                <input type="url" id="book-url-input" placeholder="https://...">
-            </div>
-            <button class="btn" style="width: 100%" onclick="submitSuggestion()">إرسال الطلب للمراجعة</button>
-        </div>
-    </div>
-
-    <div class="modal" id="admin-login-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('admin-login-modal')">&times;</span>
-            <h3>تسجيل دخول الإدارة</h3>
-            <br>
-            <div class="form-group">
-                <label>أدخل الرمز السري للمالك</label>
-                <input type="password" id="admin-password" placeholder="••••••">
-            </div>
-            <button class="btn" style="width: 100%" onclick="checkAdminPassword()">دخول</button>
-        </div>
-    </div>
+    <h1>مرحباً بك في VibeThemes</h1>
+    <div id="auth-status">جاري التحميل...</div>
+    <button class="btn" id="login-btn" onclick="login()">تسجيل الدخول</button>
 
     <script>
-        // إعدادات Firebase الخاصة بمشروع إبراهيم المحدث
         const firebaseConfig = {
             apiKey: "AIzaSyDn2Tw54",
             authDomain: "vebi-f4fa3.firebaseapp.com",
             projectId: "vebi-f4fa3",
             storageBucket: "vebi-f4fa3.appspot.com",
             messagingSenderId: "914837852533",
-            appId: "1:914837852533:web:e1cccc5cff378d879fc33c",
-            measurementId: "G-H5D0"
+            appId: "1:914837852533:web:e1cccc5cff378d879fc33c"
         };
 
-        // تشغيل الخدمة
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        let currentUser = null;
-
-        // مراقبة حالة تسجيل الدخول بجوجل
-        auth.onAuthStateChanged(user => {
-            const authArea = document.getElementById('auth-area');
-            const suggestBtn = document.getElementById('suggest-btn');
-            
-            if (user) {
-                currentUser = user;
-                suggestBtn.classList.remove('hidden');
-                authArea.innerHTML = `
-                    <div class="user-info">
-                        <img class="user-avatar" src="${user.photoURL}" alt="avatar">
-                        <span>${user.displayName}</span>
-                        <button class="btn btn-danger" onclick="logout()">خروج</button>
-                    </div>
-                `;
-            } else {
-                currentUser = null;
-                suggestBtn.classList.add('hidden');
-                authArea.innerHTML = `<button class="btn" id="login-btn" onclick="login()">تسجيل الدخول بجوجل</button>`;
-            }
+        // التعديل السحري لتجاوز مشكلة النطاق
+        provider.setCustomParameters({
+            'prompt': 'select_account'
         });
 
-        // تسجيل دخول جوجل
         function login() {
-            auth.signInWithPopup(provider).catch(err => {
-                alert("خطأ في تسجيل الدخول: " + err.message);
+            auth.signInWithPopup(provider).catch(error => {
+                console.error(error);
+                alert("حدث خطأ: " + error.message);
             });
         }
 
-        // تسجيل خروج
-        function logout() {
-            auth.signOut();
-        }
-
-        // التحكم في النوافذ
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        // إرسال اقتراح كتاب لقاعدة البيانات
-        function submitSuggestion() {
-            const title = document.getElementById('book-title-input').value.trim();
-            const desc = document.getElementById('book-desc-input').value.trim();
-            const url = document.getElementById('book-url-input').value.trim();
-
-            if(!title || !desc || !url) return alert("الرجاء تعبئة كل الحقول!");
-
-            db.collection('books').add({
-                title: title,
-                desc: desc,
-                url: url,
-                status: 'pending', // معلق للمراجعة
-                suggestedBy: currentUser.displayName,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                alert("تم إرسال روايتك بنجاح! ستظهر بالصفحة فور موافقة المالك عليها.");
-                closeModal('suggest-modal');
-                document.getElementById('book-title-input').value = '';
-                document.getElementById('book-desc-input').value = '';
-                document.getElementById('book-url-input').value = '';
-            }).catch(err => alert("حدث خطأ أثناء الإرسال: " + err.message));
-        }
-
-        // جلب الكتب المعتمدة وعرضها للزوار تلقائياً
-        db.collection('books').where('status', '==', 'approved')
-        .onSnapshot(snapshot => {
-            const grid = document.getElementById('approved-books');
-            grid.innerHTML = '';
-            if(snapshot.empty) grid.innerHTML = '<p style="color:var(--text-muted)">لا توجد كتب معتمدة حالياً.</p>';
-            
-            snapshot.forEach(doc => {
-                const book = doc.data();
-                grid.innerHTML += `
-                    <div class="book-card">
-                        <div class="book-title">${book.title}</div>
-                        <div class="book-desc">${book.desc}</div>
-                        <a href="${book.url}" target="_blank" class="btn" style="text-align:center; text-decoration:none;">📥 تحميل قراءة الـ PDF</a>
-                    </div>
-                `;
-            });
-        });
-
-        // التحقق من الرقم السري للمالك وعرض لوحة التحكم
-        function checkAdminPassword() {
-            const pass = document.getElementById('admin-password').value;
-            if(pass === "501501") {
-                closeModal('admin-login-modal');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                loadPendingBooks();
-                alert("مرحباً بك يا إبراهيم، تم فتح لوحة مراجعة الطلبات!");
+        auth.onAuthStateChanged(user => {
+            const status = document.getElementById('auth-status');
+            const btn = document.getElementById('login-btn');
+            if (user) {
+                status.innerHTML = "أهلاً بك: " + user.displayName;
+                btn.style.display = 'none';
             } else {
-                alert("الرمز السري خاطئ يا غالي!");
+                status.innerHTML = "يرجى تسجيل الدخول للبدء";
+                btn.style.display = 'inline-block';
             }
-        }
-
-        // جلب الطلبات المعلقة للمالك فقط
-        function loadPendingBooks() {
-            db.collection('books').where('status', '==', 'pending')
-            .onSnapshot(snapshot => {
-                const grid = document.getElementById('pending-books');
-                grid.innerHTML = '';
-                if(snapshot.empty) grid.innerHTML = '<p style="color:var(--text-muted)">لا توجد طلبات جديدة بانتظارك.</p>';
-                
-                snapshot.forEach(doc => {
-                    const book = doc.data();
-                    grid.innerHTML += `
-                        <div class="book-card" style="border-color: #eab308;">
-                            <div class="book-title">${book.title}</div>
-                            <p style="font-size:12px; color:var(--accent)">المقترح: ${book.suggestedBy}</p>
-                            <div class="book-desc">${book.desc}</div>
-                            <div style="display:flex; gap:10px;">
-                                <button class="btn" style="background-color:var(--accent); flex:1;" onclick="approveBook('${doc.id}')">✅ موافقة ونشر</button>
-                                <button class="btn btn-danger" style="flex:1;" onclick="rejectBook('${doc.id}')">❌ رفض وحذف</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        // الموافقة على الكتاب
-        function approveBook(id) {
-            db.collection('books').doc(id).update({ status: 'approved' })
-            .then(() => alert("تم اعتماد الرواية ونشرها بالصفحة الرئيسية!"));
-        }
-
-        // رفض وحذف الكتاب
-        function rejectBook(id) {
-            if(confirm("هل أنت متأكد من حذف هذا الطلب؟")) {
-                db.collection('books').doc(id).delete();
-            }
-        }
+        });
     </script>
 </body>
-    </html>
+</html>
