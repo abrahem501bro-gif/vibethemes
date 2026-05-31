@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VibeBooks Digital Library</title>
+<title>مكتبة VibeBooks الرقمية</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -25,6 +26,7 @@
   --accent:#10b981;
   --danger:#ef4444;
 }
+
 * { box-sizing:border-box; margin:0; padding:0; font-family:'Cairo',sans-serif; }
 body { background-color:var(--bg-color); color:var(--text-main); min-height:100vh; padding-bottom:60px; }
 header { background-color:var(--card-bg); padding:15px 20px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 6px -1px rgba(0,0,0,0.3); position:sticky; top:0; z-index:100; }
@@ -51,21 +53,16 @@ header { background-color:var(--card-bg); padding:15px 20px; display:flex; justi
 .book-card:hover { transform:translateY(-4px); border-color:var(--primary); }
 .book-title { font-size:18px; font-weight:600; }
 .book-desc { color:var(--text-muted); font-size:14px; flex-grow:1; line-height:1.6; }
+.book-cover { width:100%; height:200px; object-fit:cover; border-radius:10px; }
 .admin-section { margin-top:50px; border-top:2px dashed #2e3a56; padding-top:30px; }
 .hidden { display:none !important; }
-.lang-switcher { display:flex; gap:10px; }
 footer { text-align:center; padding:25px; color:#9ca3af; margin-top:50px; border-top:1px solid #2e3a56; }
-.book-cover { width:100%; height:200px; object-fit:cover; border-radius:10px; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">VibeBooks 📚</div>
-  <div class="lang-switcher">
-    <button class="btn" onclick="setLanguage('ar')">AR</button>
-    <button class="btn" onclick="setLanguage('en')">EN</button>
-  </div>
   <div id="auth-area">
     <button class="btn" id="login-btn" onclick="login()">تسجيل الدخول بجوجل</button>
   </div>
@@ -73,20 +70,20 @@ footer { text-align:center; padding:25px; color:#9ca3af; margin-top:50px; border
 
 <div class="container">
   <div class="hero-section">
-    <h1></h1>
-    <p></p>
+    <h1>مرحباً بك في مكتبة VibeBooks</h1>
+    <p>تصفح وحمل الكتب مجاناً أو شاركنا كتبك المفضلة</p>
   </div>
 
   <div class="actions-bar">
-    <button class="btn hidden" id="suggest-btn" onclick="openModal('suggest-modal')"></button>
-    <button class="btn hidden" id="admin-upload-btn" onclick="openModal('admin-upload-modal')">📚 إضافة كتاب مباشرة</button>
+    <button class="btn hidden" id="suggest-btn" onclick="openModal('suggest-modal')">💡 اقتراح كتاب للنشر</button>
+    <button class="btn hidden" id="admin-upload-btn" onclick="openModal('admin-upload-modal')">📚 إضافة كتاب مباشر</button>
   </div>
 
-  <h2 id="approved-books-title"></h2>
+  <h2>📖 الكتب المتوفرة</h2>
   <div class="books-grid" id="approved-books"></div>
 
   <div id="admin-panel" class="admin-section hidden">
-    <h2 id="pending-books-title"></h2>
+    <h2>🛠️ الطلبات المعلقة للمراجعة</h2>
     <div class="books-grid" id="pending-books"></div>
   </div>
 </div>
@@ -95,24 +92,24 @@ footer { text-align:center; padding:25px; color:#9ca3af; margin-top:50px; border
 <div class="modal" id="suggest-modal">
   <div class="modal-content">
     <span class="close-btn" onclick="closeModal('suggest-modal')">&times;</span>
-    <h3></h3>
+    <h3>اقتراح كتاب جديد</h3>
     <div class="form-group">
-      <label id="label-title"></label>
+      <label>اسم الكتاب</label>
       <input type="text" id="book-title-input">
     </div>
     <div class="form-group">
-      <label id="label-desc"></label>
+      <label>وصف قصير</label>
       <textarea id="book-desc-input" rows="3"></textarea>
     </div>
     <div class="form-group">
-      <label id="label-url"></label>
+      <label>رابط PDF</label>
       <input type="url" id="book-url-input" placeholder="https://...">
     </div>
     <div class="form-group">
       <label>رابط صورة الغلاف</label>
       <input type="url" id="book-cover-input" placeholder="https://...">
     </div>
-    <button class="btn" style="width:100%" onclick="submitSuggestion()"></button>
+    <button class="btn" style="width:100%" onclick="submitSuggestion()">إرسال الطلب للمراجعة</button>
   </div>
 </div>
 
@@ -135,4 +132,17 @@ footer { text-align:center; padding:25px; color:#9ca3af; margin-top:50px; border
     </div>
     <div class="form-group">
       <label>رابط صورة الغلاف</label>
-      <input type="url" id="admin-book
+      <input type="url" id="admin-book-cover" placeholder="https://...">
+    </div>
+    <button class="btn" style="width:100%" onclick="adminUploadBook()">نشر مباشر</button>
+  </div>
+</div>
+
+<footer>
+جميع الحقوق محفوظة © 2026 VibeBooks  
+<br> تصميم وتطوير: <strong>إبراهيم الشنوان</strong>
+</footer>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIza
