@@ -1,148 +1,118 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مكتبة VibeBooks الرقمية</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-
-<style>
-:root {
-  --bg-color:#0b0f19;
-  --card-bg:#151c2e;
-  --primary:#3b82f6;
-  --primary-hover:#2563eb;
-  --text-main:#f3f4f6;
-  --text-muted:#9ca3af;
-  --accent:#10b981;
-  --danger:#ef4444;
-}
-
-* { box-sizing:border-box; margin:0; padding:0; font-family:'Cairo',sans-serif; }
-body { background-color:var(--bg-color); color:var(--text-main); min-height:100vh; padding-bottom:60px; }
-header { background-color:var(--card-bg); padding:15px 20px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 6px -1px rgba(0,0,0,0.3); position:sticky; top:0; z-index:100; }
-.logo { font-size:22px; font-weight:800; color:var(--primary); text-shadow:0 0 10px rgba(59,130,246,0.3); }
-.btn { background-color:var(--primary); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; transition:all 0.2s ease; }
-.btn:hover { background-color:var(--primary-hover); transform:translateY(-1px); }
-.btn-danger { background-color:var(--danger); }
-.btn-danger:hover { background-color:#dc2626; }
-.user-info { display:flex; align-items:center; gap:10px; }
-.user-avatar { width:35px; height:35px; border-radius:50%; border:2px solid var(--primary); }
-.container { max-width:1200px; margin:30px auto; padding:0 20px; }
-.hero-section { text-align:center; margin-bottom:40px; }
-.hero-section h1 { font-size:32px; margin-bottom:10px; }
-.hero-section p { color:var(--text-muted); }
-.actions-bar { display:flex; justify-content:center; gap:15px; margin-bottom:30px; flex-wrap:wrap; }
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center; padding:20px; }
-.modal-content { background-color:var(--card-bg); padding:25px; border-radius:12px; width:100%; max-width:500px; position:relative; box-shadow:0 20px 25px -5px rgba(0,0,0,0.5); }
-.close-btn { position:absolute; top:15px; left:15px; font-size:24px; cursor:pointer; color:var(--text-muted); }
-.form-group { margin-bottom:15px; }
-.form-group label { display:block; margin-bottom:5px; font-size:14px; }
-.form-group input, .form-group textarea { width:100%; padding:10px; background-color:var(--bg-color); border:1px solid #2e3a56; border-radius:6px; color:white; font-size:14px; }
-.books-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:25px; }
-.book-card { background-color:var(--card-bg); border-radius:12px; padding:20px; display:flex; flex-direction:column; gap:12px; border:1px solid #1e293b; transition: transform 0.2s; }
-.book-card:hover { transform:translateY(-4px); border-color:var(--primary); }
-.book-title { font-size:18px; font-weight:600; }
-.book-desc { color:var(--text-muted); font-size:14px; flex-grow:1; line-height:1.6; }
-.book-cover { width:100%; height:200px; object-fit:cover; border-radius:10px; }
-.admin-section { margin-top:50px; border-top:2px dashed #2e3a56; padding-top:30px; }
-.hidden { display:none !important; }
-footer { text-align:center; padding:25px; color:#9ca3af; margin-top:50px; border-top:1px solid #2e3a56; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeBooks | مكتبة إبراهيم الشنوان</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0b0f19; --card: #151c2e; --primary: #3b82f6; --accent: #10b981; --danger: #ef4444; --text: #f3f4f6; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        header { background: #020617; padding: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); }
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        .hero { text-align: center; padding: 50px 20px; }
+        .btn { background: var(--primary); color: white; padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn:hover { background: #2563eb; transform: scale(1.05); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #2e3a56; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; }
+        .hidden { display: none !important; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #334155; background: #0b0f19; color: white; }
+    </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">VibeBooks 📚</div>
-  <div id="auth-area">
-    <button class="btn" id="login-btn" onclick="login()">تسجيل الدخول بجوجل</button>
-  </div>
+    <h2 style="color:var(--primary)">VibeBooks 📚</h2>
+    <div id="auth-area"><button class="btn" onclick="login()">دخول</button></div>
 </header>
 
 <div class="container">
-  <div class="hero-section">
-    <h1>مرحباً بك في مكتبة VibeBooks</h1>
-    <p>تصفح وحمل الكتب مجاناً أو شاركنا كتبك المفضلة</p>
-  </div>
+    <div class="hero">
+        <h1>مكتبة الأحلام الرقمية</h1>
+        <button id="suggest-btn" class="btn hidden" onclick="openModal('suggest-modal')">💡 اقتراح كتاب للنشر</button>
+    </div>
+    
+    <div id="admin-section" class="hidden" style="background:#1e293b; padding:20px; border-radius:15px; margin-bottom:30px; border: 1px solid var(--accent);">
+        <h2 style="color:var(--accent)">لوحة التحكم (المالك)</h2>
+        <div id="pending-grid" class="grid"></div>
+    </div>
 
-  <div class="actions-bar">
-    <button class="btn hidden" id="suggest-btn" onclick="openModal('suggest-modal')">💡 اقتراح كتاب للنشر</button>
-    <button class="btn hidden" id="admin-upload-btn" onclick="openModal('admin-upload-modal')">📚 إضافة كتاب مباشر</button>
-  </div>
-
-  <h2>📖 الكتب المتوفرة</h2>
-  <div class="books-grid" id="approved-books"></div>
-
-  <div id="admin-panel" class="admin-section hidden">
-    <h2>🛠️ الطلبات المعلقة للمراجعة</h2>
-    <div class="books-grid" id="pending-books"></div>
-  </div>
+    <h2>الكتب المتاحة</h2>
+    <div id="books-grid" class="grid"></div>
 </div>
-
-<!-- نموذج اقتراح كتاب -->
-<div class="modal" id="suggest-modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeModal('suggest-modal')">&times;</span>
-    <h3>اقتراح كتاب جديد</h3>
-    <div class="form-group">
-      <label>اسم الكتاب</label>
-      <input type="text" id="book-title-input">
+<div id="suggest-modal" class="modal">
+    <div class="modal-content">
+        <h3>اقتراح كتاب جديد</h3>
+        <input type="text" id="b-title" placeholder="عنوان الكتاب">
+        <textarea id="b-desc" placeholder="وصف قصير"></textarea>
+        <input type="url" id="b-url" placeholder="رابط التحميل PDF">
+        <input type="url" id="b-img" placeholder="رابط صورة الغلاف">
+        <button class="btn" onclick="submitBook()">إرسال الطلب</button>
+        <button class="btn" style="background:var(--danger)" onclick="closeModal()">إلغاء</button>
     </div>
-    <div class="form-group">
-      <label>وصف قصير</label>
-      <textarea id="book-desc-input" rows="3"></textarea>
-    </div>
-    <div class="form-group">
-      <label>رابط PDF</label>
-      <input type="url" id="book-url-input" placeholder="https://...">
-    </div>
-    <div class="form-group">
-      <label>رابط صورة الغلاف</label>
-      <input type="url" id="book-cover-input" placeholder="https://...">
-    </div>
-    <button class="btn" style="width:100%" onclick="submitSuggestion()">إرسال الطلب للمراجعة</button>
-  </div>
 </div>
-
-<!-- نموذج رفع كتاب مباشر -->
-<div class="modal" id="admin-upload-modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeModal('admin-upload-modal')">&times;</span>
-    <h3>إضافة كتاب مباشر</h3>
-    <div class="form-group">
-      <label>اسم الكتاب</label>
-      <input type="text" id="admin-book-title">
-    </div>
-    <div class="form-group">
-      <label>وصف الكتاب</label>
-      <textarea id="admin-book-desc" rows="3"></textarea>
-    </div>
-    <div class="form-group">
-      <label>رابط PDF</label>
-      <input type="url" id="admin-book-url" placeholder="https://...">
-    </div>
-    <div class="form-group">
-      <label>رابط صورة الغلاف</label>
-      <input type="url" id="admin-book-cover" placeholder="https://...">
-    </div>
-    <button class="btn" style="width:100%" onclick="adminUploadBook()">نشر مباشر</button>
-  </div>
-</div>
-
-<footer>
-جميع الحقوق محفوظة © 2026 VibeBooks  
-<br> تصميم وتطوير: <strong>إبراهيم الشنوان</strong>
-</footer>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIza
+    const firebaseConfig = {
+        apiKey: "AIzaSyDn2Tw54",
+        authDomain: "vebi-f4fa3.firebaseapp.com",
+        projectId: "vebi-f4fa3",
+        storageBucket: "vebi-f4fa3.appspot.com",
+        messagingSenderId: "914837852533",
+        appId: "1:914837852533:web:e1cccc5cff378d879fc33c"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ 'prompt': 'select_account' });
+
+    function login() { auth.signInWithPopup(provider); }
+
+    auth.onAuthStateChanged(user => {
+        const area = document.getElementById('auth-area');
+        if (user) {
+            area.innerHTML = `<span>${user.displayName}</span> <button class="btn" onclick="auth.signOut()">خروج</button>`;
+            document.getElementById('suggest-btn').classList.remove('hidden');
+            if(user.email === "abrahem501bro@gmail.com") {
+                document.getElementById('admin-section').classList.remove('hidden');
+            }
+        }
+    });
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+    function submitBook() {
+        const title = document.getElementById('b-title').value;
+        const desc = document.getElementById('b-desc').value;
+        const url = document.getElementById('b-url').value;
+        const img = document.getElementById('b-img').value;
+        db.collection('books').add({ title, desc, url, img, status: 'pending', suggestedBy: auth.currentUser.displayName }).then(() => {
+            alert("تم إرسال الكتاب للمراجعة!");
+            closeModal();
+        });
+    }
+
+    db.collection("books").onSnapshot(snap => {
+        const grid = document.getElementById('books-grid');
+        const pending = document.getElementById('pending-grid');
+        grid.innerHTML = ""; pending.innerHTML = "";
+        snap.forEach(doc => {
+            const b = doc.data();
+            const card = `<div class="card"><img src="${b.img}" style="width:100%; border-radius:10px;"><h3>${b.title}</h3><p>${b.desc}</p><a href="${b.url}" class="btn">تحميل</a></div>`;
+            if(b.status === 'approved') grid.innerHTML += card;
+            else pending.innerHTML += `<div class="card"><h3>${b.title}</h3><button class="btn" onclick="approve('${doc.id}')">✅ نشر</button></div>`;
+        });
+    });
+
+    function approve(id) { db.collection('books').doc(id).update({status: 'approved'}); }
+</script>
+</body>
+</html>
